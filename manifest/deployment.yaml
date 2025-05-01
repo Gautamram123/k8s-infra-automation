@@ -1,28 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-deployment
-  labels:
-    app: nginx
+  name: placeholder
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nginx
+      app: placeholder
   template:
     metadata:
       labels:
-        app: nginx
+        app: placeholder
     spec:
       containers:
-      - name: nginx
-        image: nginx:latest
+      - name: placeholder
+        image: placeholder
         ports:
         - containerPort: 80
         resources:
           requests:
-            cpu: "100m"
-            memory: "128Mi"
+            cpu: "200m"
+            memory: "256Mi"
           limits:
             cpu: "200m"
             memory: "256Mi"

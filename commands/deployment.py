@@ -1,39 +1,73 @@
 import click
 import subprocess
-import os
-import tempfile
 import yaml
+import tempfile
+import os
+from utils.manifest_loader import load_manifest
 
-# Define the default path for the manifest file
-DEFAULT_MANIFEST_PATH = os.path.join(os.path.dirname(__file__), '..', 'manifest', 'deployment.yaml')
+def update_manifest(manifest, replacements):
+    yaml_str = yaml.dump(manifest)
+    for key, val in replacements.items():
+        yaml_str = yaml_str.replace(f"placeholder", val)
+    return yaml.safe_load(yaml_str)
 
 @click.command()
-@click.option('--manifest', default=DEFAULT_MANIFEST_PATH, help='Path to the deployment manifest YAML file.')
-def create_deployment(manifest):
-    """Create a deployment using kubectl and a generated YAML file."""
+@click.option('--name', prompt='Deployment name', help='Name of the deployment')
+@click.option('--image', prompt='Docker image (e.g., nginx:latest)', help='Container image')
+@click.option('--cpu', prompt='CPU (e.g., 200m)', help='CPU request/limit')
+@click.option('--memory', prompt='Memory (e.g., 256Mi)', help='Memory request/limit')
+@click.option('--port', default=80, help='Container port')
+@click.option('--min-replicas', default=1, help='Minimum replicas')
+@click.option('--max-replicas', default=5, help='Maximum replicas')
+@click.option('--keda-trigger', prompt='KEDA trigger type (e.g., kafka)', help='KEDA trigger type')
+@click.option('--trigger-metadata', multiple=True, help='Trigger metadata in key=value format')
+def create_deployment(name, image, cpu, memory, port, min_replicas, max_replicas, keda_trigger, trigger_metadata):
     try:
-        # Check if the file exists
-        if not os.path.exists(manifest):
-            print(f"❌ The manifest file at {manifest} does not exist. Please check the path.")
-            return
-
-        # Load the YAML manifest
-        with open(manifest, 'r') as file:
-            deployment_manifest = yaml.safe_load(file)
-
-        # Validate the manifest (simple check for apiVersion and kind)
-        if deployment_manifest.get('apiVersion') != 'apps/v1' or deployment_manifest.get('kind') != 'Deployment':
-            print("❌ Invalid manifest: This is not a valid Kubernetes Deployment manifest.")
-            return
-
-        # Use tempfile to generate a temporary file with the manifest
-        with tempfile.NamedTemporaryFile('w', suffix='.yaml', delete=False) as f:
-            yaml.dump(deployment_manifest, f)
-            f.flush()
-            subprocess.run(['kubectl', 'apply', '-f', f.name], check=True)
-            print(f"✅ Deployment '{deployment_manifest['metadata']['name']}' created successfully using kubectl.")
+        trigger_meta_dict = dict(kv.split('=') for kv in trigger_metadata)
         
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Failed to create deployment: {e}")
+        # Load and modify manifests
+        deployment = load_manifest("deployment.yaml")
+        service = load_manifest("service.yaml")
+        scaledobject = load_manifest("scaledobject.yaml")
+
+        deployment = update_manifest(deployment, {
+            'placeholder': name,
+        })
+        deployment['spec']['template']['spec']['containers'][0]['image'] = image
+        deployment['spec']['template']['spec']['containers'][0]['ports'][0]['containerPort'] = port
+        deployment['spec']['template']['spec']['containers'][0]['resources'] = {
+            'requests': {'cpu': cpu, 'memory': memory},
+            'limits': {'cpu': cpu, 'memory': memory}
+        }
+
+        service = update_manifest(service, {
+            'placeholder': name,
+        })
+        service['spec']['ports'][0]['port'] = port
+        service['spec']['ports'][0]['targetPort'] = port
+
+        scaledobject = update_manifest(scaledobject, {
+            'placeholder': name,
+        })
+        scaledobject['spec']['minReplicaCount'] = min_replicas
+        scaledobject['spec']['maxReplicaCount'] = max_replicas
+        scaledobject['spec']['triggers'] = [{
+            'type': keda_trigger,
+            'metadata': trigger_meta_dict
+        }]
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            def write_and_apply(obj, fname):
+                fpath = os.path.join(tmpdir, fname)
+                with open(fpath, 'w') as f:
+                    yaml.dump(obj, f)
+                subprocess.run(['kubectl', 'apply', '-f', fpath], check=True)
+
+            write_and_apply(deployment, 'deployment.yaml')
+            write_and_apply(service, 'service.yaml')
+            write_and_apply(scaledobject, 'scaledobject.yaml')
+
+        print(f"✅ Deployment '{name}' created with autoscaling!")
+
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        print(f"❌ Failed to create deployment: {e}")
