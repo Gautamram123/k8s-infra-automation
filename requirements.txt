@@ -1,3 +1,0 @@
-click
-kubernetes
-PyYAML
