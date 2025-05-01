@@ -1,6 +1,6 @@
 import click
 from commands.connect import setup_k8s_connection
-from commands.install_keda import install_helm_and_keda
+from commands.install_keda import install_keda
 from commands.deployment import create_deployment
 from commands.health import health_check
 
@@ -10,7 +10,7 @@ def cli():
     pass
 
 cli.add_command(setup_k8s_connection)
-cli.add_command(install_helm_and_keda)
+cli.add_command(install_keda)
 cli.add_command(create_deployment)
 cli.add_command(health_check)
 
