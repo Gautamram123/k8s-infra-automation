@@ -1,28 +1,50 @@
-# 🚀 k8s-infra-automation
+# k8s-infra-automation
 
-A Python-based CLI tool designed to automate Kubernetes infrastructure tasks such as deploying applications, performing health checks, and managing manifests.:contentReference[oaicite:2]{index=2}
-
----
-
-## 📦 Features
-
-- **Automated Deployments**: :contentReference[oaicite:4]{index=4}
-- **Health Monitoring**: :contentReference[oaicite:7]{index=7}
-- **Manifest Management**: :contentReference[oaicite:10]{index=10}:contentReference[oaicite:12]{index=12}
+A Python-based CLI tool designed to automate Kubernetes infrastructure tasks such as deploying applications, performing health checks, and managing manifests.
 
 ---
 
-## 🛠️ Prerequisites
+## Features
+
+This CLI tool provides automated Kubernetes infrastructure operations, including:
+
+- Cluster Connection Setup  
+  Easily connect to a Kubernetes cluster using your kubeconfig file.
+
+- Helm and KEDA Installation  
+  Automatically checks and installs Helm (if missing), and deploys KEDA for event-driven autoscaling.
+
+- Deployment Automation  
+  Create deployments from YAML manifests, with support for:
+  - Image, CPU/RAM resources
+  - Port exposure
+  - Auto-generating Kubernetes Services
+
+- Health Checks  
+  - Check the health of deployments and pods.
+  - Retrieve pod statuses and container restart counts.
+  - Optionally install Metrics Server if not available.
+
+- Resource Metrics (Optional)  
+  - If Metrics Server is available, retrieve live CPU and memory usage per pod.
+
+- Manifest-Driven Customization  
+  Supports external YAML manifests (`manifest/` folder) for deployments and scaling.
+
+- Modular Structure  
+  Organized codebase with modular commands and utilities using Python's `click`.
+
+---
+
+## Prerequisites
 
 - Python 3.6 or higher
-
-- kubectl configured for your cluster
-
+- `kubectl` configured for your cluster
 - Click library for CLI interactions
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 k8s-infra-automation/
@@ -40,16 +62,16 @@ k8s-infra-automation/
 └── README.md
 ```
 
-- `cli.py`: :Main entry point for the CLI tool.
-- `commands/`: :Contains command modules for deployment and health checks.
-- `manifest/`: :Holds YAML files for Kubernetes resources
-- `utils/`: : Includes helper functions for manifest generation.
+- `cli.py`: Main entry point for the CLI tool.
+- `commands/`: Contains command modules for deployment and health checks.
+- `manifest/`: Holds YAML files for Kubernetes resources.
+- `utils/`: Includes helper functions for manifest generation.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-### 🔧 Installation
+### Installation
 
 1. Clone the repository:
 
@@ -66,38 +88,37 @@ k8s-infra-automation/
 
 ---
 
-## ⚙️ Usage
+## Usage
 
 ### Connect to the Kubernetes Cluster:
 
 ```bash
-python cli.py setup_k8s_connection
+python3 cli.py setup-k8s-connection
 ```
 
 ### Install KEDA:
 
 ```bash
-python cli.py install_keda
+python3 cli.py install-keda
 ```
 
-### 📦 Create Deployment:
+### Create Deployment:
 
 ```bash
-python cli.py create_deployment
+python3 cli.py create-deployment
 ```
 
-
-### 🩺 Health Check
+### Health Check
 
 ```bash
-python cli.py health_check
+python3 cli.py health-check
 ```
 
 ---
 
-## 📄 Manifest Files
+## Manifest Files
 
-The manifest/ directory contains YAML files for:
+The `manifest/` directory contains YAML files for:
 
 - `deployment.yaml`: Defines the deployment configuration.
 - `service.yaml`: Exposes the deployment as a service.
@@ -105,9 +126,6 @@ The manifest/ directory contains YAML files for:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request.
----
-
----
