@@ -95,24 +95,29 @@ k8s-infra-automation/
 ```bash
 python3 cli.py setup-k8s-connection
 ```
+![setup-k8s-connection Diagram](Images/result_connect_k8.png)
 
 ### Install KEDA:
 
 ```bash
 python3 cli.py install-keda
 ```
+![install-keda](Images/result_install_keda.png)
 
 ### Create Deployment:
 
 ```bash
 python3 cli.py create-deployment
 ```
+![install-keda](Images/result_CreateDeps.png)
+
 
 ### Health Check
 
 ```bash
 python3 cli.py health-check
 ```
+![install-keda](Images/result_health_check.png)
 
 ---
 
