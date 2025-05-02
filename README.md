@@ -134,3 +134,21 @@ The `manifest/` directory contains YAML files for:
 ## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request.
+
+---
+## Future Scope of the Project
+ 
+### Enhanced Health Monitoring
+- Integrate with Prometheus and Grafana for richer health insights and alerts.
+- Automate installation and configuration of Prometheus stack using Helm.
+
+### CI/CD Integration
+
+- Create GitHub Actions or GitLab CI pipelines using this tool for automated deployments.
+- Generate pipeline YAML templates for integrating with Azure DevOps, Jenkins, etc.
+
+ ### Multi-Environment Support
+
+- Add support for managing resources across different environments (dev, staging, prod).
+
+
