@@ -26,7 +26,7 @@ jobs:
         echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > ~/.kube/config
 
     - name: Connect to cluster
-      run: python3 cli.py setup-k8s-connection
+      run: python3 cli.py setup-k8s-connection --kubeconfig ~/.kube/config
 
     - name: Install KEDA
       run: python3 cli.py install-keda
