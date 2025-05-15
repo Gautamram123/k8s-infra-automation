@@ -1,5 +1,8 @@
+import os
 import click
 from kubernetes import config, client
+
+DEFAULT_KUBECONFIG_PATH = os.path.expanduser("~/.kube/config")
 
 def connect_to_cluster(kubeconfig_path):
     try:
@@ -12,8 +15,12 @@ def connect_to_cluster(kubeconfig_path):
         return False
 
 @click.command()
-@click.option('--kubeconfig', prompt='Enter the path to your kubeconfig file (or press Enter for default)',
-              help='Path to kubeconfig file.')
+@click.option(
+    '--kubeconfig',
+    default=DEFAULT_KUBECONFIG_PATH,
+    show_default=True,
+    help='Path to kubeconfig file.'
+)
 def setup_k8s_connection(kubeconfig):
     """Connect to the Kubernetes cluster and verify the connection."""
     if connect_to_cluster(kubeconfig):
