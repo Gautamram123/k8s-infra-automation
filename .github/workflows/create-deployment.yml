@@ -1,0 +1,31 @@
+name: Create Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: "Docker image to deploy"
+        required: true
+        default: "nginx:latest"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > ~/.kube/config
+
+      - name: Create Deployment
+        run: |
+          python3 cli.py create-deployment --image ${{ github.event.inputs.image }}
