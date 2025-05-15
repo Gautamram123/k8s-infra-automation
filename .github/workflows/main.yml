@@ -1,0 +1,38 @@
+name: Run Kubernetes CLI Automation
+
+on:
+  workflow_dispatch:  # Manual trigger from GitHub UI
+
+jobs:
+  k8s-cli-automation:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Set up kubeconfig
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > ~/.kube/config
+
+    - name: Connect to cluster
+      run: python3 cli.py setup-k8s-connection
+
+    - name: Install KEDA
+      run: python3 cli.py install-keda
+
+    - name: Create Deployment
+      run: python3 cli.py create-deployment
+
+    - name: Run Health Check
+      run: python3 cli.py health-check
