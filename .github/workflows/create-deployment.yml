@@ -1,20 +1,49 @@
-name: Create Deployment
+name: Create Kubernetes Deployment
 
 on:
   workflow_dispatch:
     inputs:
-      image:
-        description: "Docker image to deploy"
+      name:
+        description: "Deployment name"
         required: true
-        default: "nginx:latest"
+      image:
+        description: "Container image (e.g., nginx:latest)"
+        required: true
+      cpu:
+        description: "CPU (e.g., 200m)"
+        required: true
+      memory:
+        description: "Memory (e.g., 256Mi)"
+        required: true
+      port:
+        description: "Container port"
+        required: true
+        default: "80"
+      min_replicas:
+        description: "Minimum replicas"
+        required: true
+        default: "1"
+      max_replicas:
+        description: "Maximum replicas"
+        required: true
+        default: "5"
+      keda_trigger:
+        description: "KEDA trigger type (e.g., kafka)"
+        required: true
+      trigger_metadata:
+        description: "Trigger metadata (e.g., topic=mytopic group=mygroup)"
+        required: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v4
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
@@ -26,6 +55,15 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > ~/.kube/config
 
-      - name: Create Deployment
+      - name: Run Create Deployment
         run: |
-          python3 cli.py create-deployment --image ${{ github.event.inputs.image }}
+          python3 cli.py create-deployment \
+            --name "${{ github.event.inputs.name }}" \
+            --image "${{ github.event.inputs.image }}" \
+            --cpu "${{ github.event.inputs.cpu }}" \
+            --memory "${{ github.event.inputs.memory }}" \
+            --port "${{ github.event.inputs.port }}" \
+            --min-replicas "${{ github.event.inputs.min_replicas }}" \
+            --max-replicas "${{ github.event.inputs.max_replicas }}" \
+            --keda-trigger "${{ github.event.inputs.keda_trigger }}" \
+            $(for kv in ${{ github.event.inputs.trigger_metadata }}; do echo --trigger-metadata "$kv"; done)
